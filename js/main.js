@@ -125,6 +125,7 @@ function createLights(scene) {
     let light0 = new BABYLON.DirectionalLight("dir0", new BABYLON.Vector3(-1, -1, 0), scene);
     light0.intensity = 1;
 	var light = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
+	light.intensity = 0.7;
 }
 
 function loadSounds(scene) {
@@ -177,33 +178,46 @@ function loadSounds(scene) {
 	};
 }
 
+function getRandomInt(max) {
+    return Math.floor(Math.random() * max);
+}
+
 function createIslands(scene) {
 
-	let meshTask = scene.assetsManager.addMeshTask("islands","","assets/","scene.glb");
+	let meshTask = scene.assetsManager.addMeshTask("islands task","","assets/","scene.glb");
   
 	meshTask.onSuccess = function (task) {
 	  onIslandImported(
-		task.loadedMeshes,
+		task.loadedMeshes
 	  );
 	};
   
 	function onIslandImported(newMeshes) {
-		let island1 = newMeshes[0];
-		island1.position = new BABYLON.Vector3(310, 0, -595);
-		island1.scaling = new BABYLON.Vector3(1.5,1.5,1.5);
-		island1.name = "island1";
+		const island0 = newMeshes[0];
+		island0.position = new BABYLON.Vector3(780, 0, -800);
+		island0.scaling = new BABYLON.Vector3(1.5,1.5,1.5);
+		island0.rotation = new BABYLON.Vector3(0,180,0);
+		island0.name = "island0";
 		
-		// make clones
-		let islands = [];
-		islands[0] = island1
-		console.log(islands)
-		for (let i = 1; i < 6; i++) {
-			console.log("coucou")
-			islands[i] = island1.clone("island"+i);
-			islands[i].position = new BABYLON.Vector3(getRandomInt(1000)-800, 0, getRandomInt(1000)-800)
-			let size = getRandomInt(2)+1.5
-			islands[i].scaling = new BABYLON.Vector3(size,size,size)
-		}
+		const island1 = island0.clone("island1")
+		island1.position = new BABYLON.Vector3(-800, 0, -800);
+		island1.rotation = new BABYLON.Vector3(0,90,0);
+		
+		const island2 = island0.clone("island2")
+		island2.position = new BABYLON.Vector3(0, 1, -800);
+		island2.rotation = new BABYLON.Vector3(0,200,0);
+
+		const island3 = island0.clone("island3")
+		island3.position = new BABYLON.Vector3(-790, 0, 30);
+		island3.rotation = new BABYLON.Vector3(0,150,0);
+
+		const island4 = island0.clone("island4")
+		island4.position = new BABYLON.Vector3(-780, 0, 750);
+		island4.rotation = new BABYLON.Vector3(0,300,0);
+
+		const island5 = island0.clone("island5")
+		island5.position = new BABYLON.Vector3(-450, 0, -320);
+		island5.rotation = new BABYLON.Vector3(0,320,0);
 	}
 }
 
