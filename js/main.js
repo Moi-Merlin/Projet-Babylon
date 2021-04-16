@@ -34,7 +34,7 @@ function createScene() {
 	let lights = createLights(scene);
 	//let freeCamera = createFreeCamera(scene);
   
-	//createLights(scene);
+	createIslands(scene);
 	createSkybox(scene);
 	loadSounds(scene);
   
@@ -91,7 +91,7 @@ function createSkybox(scene){
 
 function createGround(scene){
 	//On crée d'abord un sol "sabloneux" grâce à une texture et un bumb qui lui sont propres
-	var groundTexture = new BABYLON.Texture("assets/textures/sable.jpg", scene);
+	var groundTexture = new BABYLON.Texture("assets/textures/fond.jpg", scene);
 	groundTexture.vScale = groundTexture.uScale = 4.0;
 	var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
 	groundMaterial.diffuseTexture = groundTexture;
@@ -111,45 +111,20 @@ function createGround(scene){
 	water.bumpHeight = 0.8;
 	water.waveLength = 1;
 	water.waterColor = new BABYLON.Color3(0.2, 0.2, 0.6);
-	water.colorBlendFactor = 0.1;
+	water.colorBlendFactor = 0;
 	// On fait en sorte que nos vagues reflètent la skybox et le sol
 	let skybox = scene.getMeshByName("skyBox");
 	water.addToRenderList(skybox);
 	water.addToRenderList(ground);
 	waterMesh.material = water;
-	waterMesh.position.y = 2;
-
-	// On crée notre troisième et dernier sol basé sur une mixMap afin d'avooir des îles
-	var terrainMaterial = new BABYLON.TerrainMaterial("terrainMaterial", scene);
-    terrainMaterial.allowShaderHotSwapping = false
-    terrainMaterial.specularColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-    terrainMaterial.specularPower = 64;
-    // Set the mix texture (represents the RGB values)
-    terrainMaterial.mixTexture = new BABYLON.Texture("assets/textures/MixMap.png", scene);
-    // Diffuse textures following the RGB values of the mix map
-    terrainMaterial.diffuseTexture1 = new BABYLON.Texture("assets/textures/dark.png", scene);
-    terrainMaterial.diffuseTexture2 = new BABYLON.Texture("assets/textures/ground.jpg", scene);
-    terrainMaterial.diffuseTexture3 = new BABYLON.Texture("assets/textures/sandMiddle.png", scene);
-	// //Bump textures according to the previously set diffuse textures
-    // terrainMaterial.bumpTexture1 = new BABYLON.Texture("assets/textures/grassn.png", scene);
-    // //terrainMaterial.bumpTexture2 = new BABYLON.Texture("assets/textures/groundn.png", scene);
-    // terrainMaterial.bumpTexture3 = new BABYLON.Texture("assets/textures/sandMiddlen.png", scene);
-    // Rescale textures according to the terrain
-    terrainMaterial.diffuseTexture1.uScale = terrainMaterial.diffuseTexture1.vScale = 10;
-    terrainMaterial.diffuseTexture2.uScale = terrainMaterial.diffuseTexture2.vScale = 10;
-    terrainMaterial.diffuseTexture3.uScale = terrainMaterial.diffuseTexture3.vScale = 10;
-	// Ground
-	var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "assets/textures/HMap.png", 3000, 3000, 100, -4, 150, scene, true);
-	ground.position.y = -4.0;
-	ground.material = terrainMaterial;
-    ground.checkCollisions = true;
-    return ground;
+	waterMesh.position.y = 3;
 }
 
 function createLights(scene) {
     // i.e sun light with all light rays parallels, the vector is the direction.
     let light0 = new BABYLON.DirectionalLight("dir0", new BABYLON.Vector3(-1, -1, 0), scene);
     light0.intensity = 1;
+	var light = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
 }
 
 function loadSounds(scene) {
@@ -200,6 +175,36 @@ function loadSounds(scene) {
 		}
 	  );
 	};
+}
+
+function createIslands(scene) {
+
+	let meshTask = scene.assetsManager.addMeshTask("islands","","assets/","scene.glb");
+  
+	meshTask.onSuccess = function (task) {
+	  onIslandImported(
+		task.loadedMeshes,
+	  );
+	};
+  
+	function onIslandImported(newMeshes) {
+		let island1 = newMeshes[0];
+		island1.position = new BABYLON.Vector3(310, 0, -595);
+		island1.scaling = new BABYLON.Vector3(1.5,1.5,1.5);
+		island1.name = "island1";
+		
+		// make clones
+		let islands = [];
+		islands[0] = island1
+		console.log(islands)
+		for (let i = 1; i < 6; i++) {
+			console.log("coucou")
+			islands[i] = island1.clone("island"+i);
+			islands[i].position = new BABYLON.Vector3(getRandomInt(1000)-800, 0, getRandomInt(1000)-800)
+			let size = getRandomInt(2)+1.5
+			islands[i].scaling = new BABYLON.Vector3(size,size,size)
+		}
+	}
 }
 
 window.addEventListener("resize", () => {
