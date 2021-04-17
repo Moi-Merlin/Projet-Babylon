@@ -35,6 +35,7 @@ function createScene() {
 	//let freeCamera = createFreeCamera(scene);
   
 	createIslands(scene);
+	createFort(scene);
 	createSkybox(scene);
 	loadSounds(scene);
   
@@ -197,28 +198,71 @@ function createIslands(scene) {
 		island0.position = new BABYLON.Vector3(780, 0, -800);
 		island0.scaling = new BABYLON.Vector3(1.5,1.5,1.5);
 		island0.rotation = new BABYLON.Vector3(0,180,0);
-		island0.name = "island0";
+		island0.name = "island";
+
+		var IslandsPositionsArray = [
+			[new BABYLON.Vector3(-800, 0, -800), new BABYLON.Vector3(0,90,0)],
+			[new BABYLON.Vector3(0, 1, -800), new BABYLON.Vector3(0,200,0)],
+			[new BABYLON.Vector3(-790, 0, 30), new BABYLON.Vector3(0,150,0)],
+			[new BABYLON.Vector3(-780, 0, 750),new BABYLON.Vector3(0,300,0)],
+			[new BABYLON.Vector3(-450, -1, -320), new BABYLON.Vector3(0,320,0)]
+		];
 		
-		const island1 = island0.clone("island1")
-		island1.position = new BABYLON.Vector3(-800, 0, -800);
-		island1.rotation = new BABYLON.Vector3(0,90,0);
-		
-		const island2 = island0.clone("island2")
-		island2.position = new BABYLON.Vector3(0, 1, -800);
-		island2.rotation = new BABYLON.Vector3(0,200,0);
-
-		const island3 = island0.clone("island3")
-		island3.position = new BABYLON.Vector3(-790, 0, 30);
-		island3.rotation = new BABYLON.Vector3(0,150,0);
-
-		const island4 = island0.clone("island4")
-		island4.position = new BABYLON.Vector3(-780, 0, 750);
-		island4.rotation = new BABYLON.Vector3(0,300,0);
-
-		const island5 = island0.clone("island5")
-		island5.position = new BABYLON.Vector3(-450, 0, -320);
-		island5.rotation = new BABYLON.Vector3(0,320,0);
+		for (let i=0; i<5; i++){
+			var IslandClone = island0.clone("island"+i)
+			IslandClone.position = IslandsPositionsArray[i][0]
+			IslandClone.rotation = IslandsPositionsArray[i][1]
+		}
 	}
+}
+
+function createFort(scene){
+	let fortTask = scene.assetsManager.addMeshTask("fort task","","assets/","pirateFort.glb");
+  
+	fortTask.onSuccess = function (task) {
+	  onFortImported(
+		task.loadedMeshes
+	  );
+	};
+  
+	function onFortImported(newMeshes) {
+		const fort = newMeshes[0];
+		fort.position = new BABYLON.Vector3(0, 19, 0);
+		fort.scaling = new BABYLON.Vector3(26,26,26);
+	}
+	
+	let cannonTask = scene.assetsManager.addMeshTask("cannon task","","assets/","cannon.glb");
+  
+	cannonTask.onSuccess = function (task) {
+	  onCannonImported(
+		task.loadedMeshes
+	  );
+	};
+  
+	function onCannonImported(newMeshes) {	
+		var cannon = newMeshes[0]
+		cannon.position = new BABYLON.Vector3(40, 244.4, 10);
+		cannon.rotation = new BABYLON.Vector3(0,BABYLON.Tools.ToRadians(90),0);
+		cannon.scaling = new BABYLON.Vector3(26,26,26);
+		cannon.name = "cannon"
+
+		scene.cannons = []
+		
+		var cannonPositionsArray = [
+			[new BABYLON.Vector3(40, 162, 43),new BABYLON.Vector3(0, BABYLON.Tools.ToRadians(90), 0)],
+			[new BABYLON.Vector3(40, 79, 19),new BABYLON.Vector3(0, BABYLON.Tools.ToRadians(90), 0)],
+			[new BABYLON.Vector3(15, 124, 50),new BABYLON.Vector3(0, 0, 0)],
+			[new BABYLON.Vector3(20, 244.4, 65),new BABYLON.Vector3(0, 0, 0)]
+		]
+		//scene.cannons[-1] = cannon0
+
+		for(let i = 0 ; i<4; i++){
+			const cannonClone = cannon.clone("cannon"+i);
+			cannonClone.position = cannonPositionsArray[i][0];
+			cannonClone.rotation = cannonPositionsArray[i][1];
+		}
+	}
+	
 }
 
 window.addEventListener("resize", () => {
