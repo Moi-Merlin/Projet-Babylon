@@ -1,3 +1,5 @@
+import Shark from "./Shark.js";
+
 let scene;
 let canvas;
 let engine;
@@ -36,8 +38,11 @@ function createScene() {
   
 	createIslands(scene);
 	createFort(scene);
+	createFishes(scene);
 	createSkybox(scene);
 	loadSounds(scene);
+
+	createButtons();
   
 	return scene;
 }
@@ -77,6 +82,38 @@ function configureAssetManager(scene) {
 	return assetsManager;
 }
 
+function createButtons(){
+	var button = document.createElement("button");
+    button.style.top = "30px";
+    button.style.right = "30px";
+    button.textContent = "Pause Music";
+    button.style.width = "50px"
+    button.style.height = "50px"
+
+    button.setAttribute = ("id", "soundButton");
+    button.style.position = "absolute";
+	button.style.color = "whitesmoke";
+	button.style.borderColor = "transparent"
+	button.style.borderRadius = "2em";
+	button.style.outline = "none";
+	button.style.backgroundColor = "rgba(166, 204, 210,0.5)";
+
+    document.body.appendChild(button);
+
+	button.addEventListener("click", () => {
+        if (scene.assets.pirateMusic) {
+			if (button.textContent == "Pause Music"){
+				scene.assets.pirateMusic.pause()
+				button.textContent = "Play Music";
+			}
+			else if (button.textContent == "Play Music"){
+				scene.assets.pirateMusic.play()
+				button.textContent = "Pause Music";
+			}
+        }
+    })
+}
+
 function createSkybox(scene){
 	var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:3300.0}, scene);
     var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
@@ -97,22 +134,22 @@ function createGround(scene){
 	var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
 	groundMaterial.diffuseTexture = groundTexture;
 	var ground = BABYLON.Mesh.CreateGround("ground", 3000, 3000, 32, scene, false);
-	ground.position.y = -1;
+	ground.position.y = -20;
 	ground.material = groundMaterial;
 
-	// On crée ensuite un second sol qui est un Water Material, il représente la mer
-	// On lui donne des attributs qui nous permettent de créer des vagues avec un effet de vent
+	//On crée ensuite un second sol qui est un Water Material, il représente la mer
+	//On lui donne des attributs qui nous permettent de créer des vagues avec un effet de vent
 	var waterMesh = BABYLON.Mesh.CreateGround("sea", 3000, 3000, 32, scene, false);
 	var water = new BABYLON.WaterMaterial("water", scene, new BABYLON.Vector2(1024, 1024));
-	water.backFaceCulling = true;
 	water.bumpTexture = new BABYLON.Texture("assets/textures/waterbump.png", scene);
 	water.windForce = -6;
 	water.windDirection = new BABYLON.Vector2(1, 1);
 	water.waveHeight = 1.7;
 	water.bumpHeight = 0.8;
 	water.waveLength = 1;
-	water.waterColor = new BABYLON.Color3(0.2, 0.2, 0.6);
 	water.colorBlendFactor = 0;
+	//water.alphaMode =  BABYLON.Engine.ALPHA_SUBTRACT;
+    water.alpha = 0.9;
 	// On fait en sorte que nos vagues reflètent la skybox et le sol
 	let skybox = scene.getMeshByName("skyBox");
 	water.addToRenderList(skybox);
@@ -194,12 +231,15 @@ function createIslands(scene) {
 	};
   
 	function onIslandImported(newMeshes) {
+		//On crée notre première île, avec la position, la taille et l'orientation souhaitée
 		const island0 = newMeshes[0];
 		island0.position = new BABYLON.Vector3(780, 0, -800);
 		island0.scaling = new BABYLON.Vector3(1.5,1.5,1.5);
 		island0.rotation = new BABYLON.Vector3(0,180,0);
 		island0.name = "island";
 
+		//On crée ensuite un tableau qui va contenir les position et orientations souhaitées pour chaque autre îles
+		// Puisqu'on les veut toutes de la même taille, celle prise au clonage n'a pas besoin d'être modifiée
 		var IslandsPositionsArray = [
 			[new BABYLON.Vector3(-800, 0, -800), new BABYLON.Vector3(0,90,0)],
 			[new BABYLON.Vector3(0, 1, -800), new BABYLON.Vector3(0,200,0)],
@@ -208,6 +248,7 @@ function createIslands(scene) {
 			[new BABYLON.Vector3(-450, -1, -320), new BABYLON.Vector3(0,320,0)]
 		];
 		
+		// On clone donc ensuite l'île principale avec les caractéristiques définies précédemment pour chaque île
 		for (let i=0; i<5; i++){
 			var IslandClone = island0.clone("island"+i)
 			IslandClone.position = IslandsPositionsArray[i][0]
@@ -217,11 +258,10 @@ function createIslands(scene) {
 }
 
 function createFort(scene){
-	let fortTask = scene.assetsManager.addMeshTask("fort task","","assets/","pirateFort.glb");
-  
+	let fortTask = scene.assetsManager.addMeshTask("fort task","","assets/","fort.glb");
 	fortTask.onSuccess = function (task) {
 	  onFortImported(
-		task.loadedMeshes
+		task.loadedMeshes,
 	  );
 	};
   
@@ -240,6 +280,7 @@ function createFort(scene){
 	};
   
 	function onCannonImported(newMeshes) {	
+		// On procède ici exactement de la même façon que pour les îles créées précédemment
 		var cannon = newMeshes[0]
 		cannon.position = new BABYLON.Vector3(40, 244.4, 10);
 		cannon.rotation = new BABYLON.Vector3(0,BABYLON.Tools.ToRadians(90),0);
@@ -263,6 +304,24 @@ function createFort(scene){
 		}
 	}
 	
+}
+
+function createFishes(scene){
+	let sharkTask = scene.assetsManager.addMeshTask("sharktask","","assets/","shark.glb");
+
+	sharkTask.onSuccess = function (task) {
+		onSharkImported(
+			task.loadedMeshes
+		);
+	};
+
+	function onSharkImported(Meshes, skeletons){
+		const shark = Meshes[0];
+		shark.position = new BABYLON.Vector3(380,-22,160)
+		shark.scaling = new BABYLON.Vector3(10,10,10)
+		let hero = new Shark(shark, 0, 1, 10, scene);
+	}
+
 }
 
 window.addEventListener("resize", () => {
