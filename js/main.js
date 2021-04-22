@@ -22,7 +22,6 @@ function startGame() {
 		//all action for our player
 		movePlayer(scene);
 
-
 		//all action for mobs
 		moveShark();
 		moveDwarf();
@@ -41,6 +40,9 @@ function createScene() {
 	let camera = new BABYLON.ArcRotateCamera("Camera", 3 * Math.PI / 2, Math.PI / 4, 100, new BABYLON.Vector3(10,100,10), scene);
 	camera.attachControl(canvas, true);
 	
+	//enable physics in the scene with the gravity we have on earth
+	scene.enablePhysics(new BABYLON.Vector3(0,-9.8,0));
+
 	let ground = createGround(scene);
 	let lights = createLights(scene);
 	//let freeCamera = createFreeCamera(scene);
@@ -191,7 +193,7 @@ function loadSounds(scene) {
 		task.data,
 		scene,
 		null,
-		{ loop: false, spatialSound: true }
+		{ loop: false, spatialSound: false }
 	  );
 	};
 
@@ -206,7 +208,7 @@ function loadSounds(scene) {
 		task.data,
 		scene,
 		null,
-		{ loop: false, spatialSound: true }
+		{ loop: false, spatialSound: false }
 	  );
 	};
   
@@ -269,7 +271,8 @@ function createIslands(scene) {
 	}
 }
 
-function createFort(scene){
+async function createFort(scene){
+	// we start by creating the pirate fort while adding it to the asset manager
 	let fortTask = scene.assetsManager.addMeshTask("fort task","","assets/meshes/scene/","fort.glb");
 	fortTask.onSuccess = function (task) {
 	  onFortImported(
@@ -282,40 +285,193 @@ function createFort(scene){
 		fort.position = new BABYLON.Vector3(0, 19, 0);
 		fort.scaling = new BABYLON.Vector3(26,26,26);
 	}
-	
-	let cannonTask = scene.assetsManager.addMeshTask("cannon task","","assets/meshes/canons/","cannon.glb");
+
+	// the second step is to import the cannons and the cannon balls and effects that will be paired with them
+    let cannonTask = scene.assetsManager.addMeshTask("cannon task","","assets/meshes/canons/","cannon.glb");
   
 	cannonTask.onSuccess = function (task) {
 	  onCannonImported(
-		task.loadedMeshes
+		task.loadedMeshes,
+		task.loadedAnimationGroups
 	  );
 	};
   
-	function onCannonImported(newMeshes) {	
-		// On procède ici exactement de la même façon que pour les îles créées précédemment
-		var cannon = newMeshes[0]
-		cannon.position = new BABYLON.Vector3(40, 244.4, 10);
-		cannon.rotation = new BABYLON.Vector3(0,BABYLON.Tools.ToRadians(90),0);
+	async function onCannonImported(meshes, animationGroups) {
+
+		//remove the top level root node
+		var cannon = meshes[0].getChildren()[0];
 		cannon.scaling = new BABYLON.Vector3(26,26,26);
-		cannon.name = "cannon"
+		cannon.setParent(null);
+		meshes[0].dispose();
 
-		scene.cannons = []
-		
-		var cannonPositionsArray = [
-			[new BABYLON.Vector3(40, 162, 43),new BABYLON.Vector3(0, BABYLON.Tools.ToRadians(90), 0)],
-			[new BABYLON.Vector3(40, 79, 19),new BABYLON.Vector3(0, BABYLON.Tools.ToRadians(90), 0)],
-			[new BABYLON.Vector3(15, 124, 50),new BABYLON.Vector3(0, 0, 0)],
-			[new BABYLON.Vector3(20, 244.4, 65),new BABYLON.Vector3(0, 0, 0)]
-		]
-		//scene.cannons[-1] = cannon0
-
-		for(let i = 0 ; i<4; i++){
-			const cannonClone = cannon.clone("cannon"+i);
-			cannonClone.position = cannonPositionsArray[i][0];
-			cannonClone.rotation = cannonPositionsArray[i][1];
+		//set the metadata of each mesh to filter on later (we will be able to identify the meshes as cannons)
+		var cannonMeshes = cannon.getChildMeshes();
+		for (var i = 0; i < cannonMeshes.length; i++) {
+			cannonMeshes[i].metadata = "cannon";
 		}
+
+		//array for holding the cannon and "paired" animation group, we are going tyo combine the original 
+		// animations of the mesh so they are played at the same time
+		var cannonAnimationPairings = {};
+
+		//array for holding readyToPlay status for the cannons, we will later on set a boolean value to know if the 
+		// cannon that has been selected is ready to be used again or not
+		var cannonReadyToPlay = {};
+
+		//create a large box underneath the tower, that will act as a trigger to destroy the cannonballs.
+		// we make it the same size and origin point as the ocean (just a bit underneath) so we can make the 
+		// cannonballs disapear once they reach the water (we only triger in the direction of the ocean so 
+		// we don't need to consider any scenario where a cannonball will touch the island)
+		var killBox = BABYLON.MeshBuilder.CreateBox("killBox", {width:3000, depth:3000, height:4}, scene);
+		var sea = scene.getMeshByName("sea").position.y
+		killBox.position = new BABYLON.Vector3(0,sea,0);
+		killBox.isVisible = false;
+
+		//create a cannonBall template in order to clone it whenerver we want to shoot
+		var cannonBall = BABYLON.MeshBuilder.CreateSphere("cannonBall", {diameter: 7.8}, scene);
+		var cannonBallMaterial = new BABYLON.StandardMaterial("cannonBallMaterial", scene);
+		cannonBallMaterial.diffuseColor = BABYLON.Color3.Black();
+		cannonBallMaterial.specularPower = 256;
+		cannonBall.material = cannonBallMaterial;
+		// we initialy set it to false and will only make the cannonballs visible when using them
+		cannonBall.isVisible = false;
+
+		// we load the animations of the cannon into a const in order to use them later on
+		const importedAnimGroups = animationGroups;
+
+		//loop through all imported animation groups and copy the animation curve data to an array.
+		var animations = [];
+		for (var i = 0; i < importedAnimGroups.length; i++) {
+			importedAnimGroups[i].stop();
+			animations.push(importedAnimGroups[i].targetedAnimations[0].animation);
+			importedAnimGroups[i].dispose();
+		}
+
+		//create a new animation group and add targeted animations based on copied curve data from the "animations" array.
+		// we want to play the annimations at the same time so we need to discpose of the ancient animations groups given with 
+		// the asset and create a new one that will contain them both
+		var cannonAnimGroup = new BABYLON.AnimationGroup("cannonAnimGroup");
+		cannonAnimGroup.addTargetedAnimation(animations[0], cannon.getChildMeshes()[1]);
+		cannonAnimGroup.addTargetedAnimation(animations[1], cannon.getChildMeshes()[0]);
+		
+		//create a box for particle emission, position it at the muzzle of the cannon, turn off visibility and parent it to the cannon mesh
+		var particleEmitter = await BABYLON.MeshBuilder.CreateBox("particleEmitter", {size: 8}, scene);
+		particleEmitter.position = new BABYLON.Vector3(0, 20, 25);
+		particleEmitter.rotation.x = BABYLON.Tools.ToRadians(78.5);
+		particleEmitter.isVisible = false;
+		particleEmitter.setParent(cannon.getChildMeshes()[1]);
+		
+		//load particle system from the snippet server and set the emitter to the particleEmitter. Set its stopDuration.
+		const smokeBlast = await BABYLON.ParticleHelper.CreateFromSnippetAsync("LCBQ5Y#6", scene);
+		smokeBlast.emitter = particleEmitter;
+		smokeBlast.minScaleX = 10;
+        smokeBlast.maxScaleX = 100;
+        smokeBlast.minScaleY = 10;
+        smokeBlast.maxScaleY = 100;
+		smokeBlast.targetStopDuration = 0.5;
+
+		//position and rotation data for the placement of the cannon clones
+		var cannonPositionArray = [
+			[new BABYLON.Vector3(40, 244.4, 10),new BABYLON.Vector3(0,BABYLON.Tools.ToRadians(90),BABYLON.Tools.ToRadians(180))],
+			[new BABYLON.Vector3(40, 162, 43),new BABYLON.Vector3(0, BABYLON.Tools.ToRadians(90), BABYLON.Tools.ToRadians(180))],
+			[new BABYLON.Vector3(40, 79, 19),new BABYLON.Vector3(0, BABYLON.Tools.ToRadians(90), BABYLON.Tools.ToRadians(180))],
+			[new BABYLON.Vector3(15, 124, 50),new BABYLON.Vector3(0, 0, BABYLON.Tools.ToRadians(180))],
+			[new BABYLON.Vector3(20, 244.4, 65),new BABYLON.Vector3(0, 0, BABYLON.Tools.ToRadians(180))]
+		];
+		//create 5 cannon clones, each with unique position/rotation data (and the particle systems with them)
+		//also create 5 new animation groups with targeted animations applied to the newly cloned meshes
+		for (var i = 0; i < cannonPositionArray.length; i++) {
+			var cannonClone = cannon.clone("cannonClone" + i);
+			cannonClone.position = cannonPositionArray[i][0];
+			cannonClone.rotation = cannonPositionArray[i][1];
+			var cannonAnimGroupClone = new BABYLON.AnimationGroup("cannonAnimGroupClone" + i);
+			cannonAnimGroupClone.addTargetedAnimation(cannonAnimGroup.targetedAnimations[0].animation, cannonClone.getChildMeshes()[1]);
+			cannonAnimGroupClone.addTargetedAnimation(cannonAnimGroup.targetedAnimations[1].animation, cannonClone.getChildMeshes()[0]);
+
+			//store a key/value pair of each clone name and the name of the associated animation group name.
+			cannonAnimationPairings[cannonClone.name] = cannonAnimGroupClone.name;
+
+			//store key/value pair for the cannon name and it's readyToPlay status as 1;
+			cannonReadyToPlay[cannonClone.name] = 1;
+
+		}
+		//dispose of the original cannon, animation group, and particle system
+		cannon.dispose();
+		cannonAnimGroup.dispose();
+		smokeBlast.dispose();
+
+		//create an array for all particle systems in the scene, loop through it and stop all systems from playing.
+		var smokeBlasts = scene.particleSystems;
+		for(var i = 0; i < smokeBlasts.length; i++){
+			smokeBlasts[i].stop();
+		}
+
+		//logic of what happens on a click oàn one of the cannons
+		scene.onPointerDown = function (evt, pickResult) {
+			//check if a mesh was picked and if that mesh has specific metadata
+			if (pickResult.pickedMesh && pickResult.pickedMesh.metadata === "cannon") {
+				//find the top level parent (necessary since the cannon is an extra layer below the clone root)
+				var topParent = pickResult.pickedMesh.parent;
+				if (topParent.parent) {
+					topParent = topParent.parent;
+				}
+				//wrap all 'play' elements into a check to make sure the cannon can be played.
+				if(cannonReadyToPlay[topParent.name] === 1){
+					//set the readyToPlay status to 0
+					cannonReadyToPlay[topParent.name] = 0;
+					//loop through all of the animation groups in the scene and play the correct group based on the top level parent of the picked mesh.
+					var animationToPlay = cannonAnimationPairings[topParent.name];
+					for (var i = 0; i < scene.animationGroups.length; i++) {
+						if (scene.animationGroups[i].name === animationToPlay) {
+							scene.animationGroups[i].play();
+							//after the animation has finished, set the readyToPlay status for this cannon to 1;
+							scene.animationGroups[i].onAnimationGroupEndObservable.addOnce(() => {
+								cannonReadyToPlay[topParent.name] = 1;
+							});
+						}
+					}
+					//loop through all particle systems in the scene, loop through all picked mesh submeshes. if there is a matching mesh and particle system emitter, start the particle system.
+					var childMeshes = pickResult.pickedMesh.getChildMeshes();
+					for(var i = 0; i < smokeBlasts.length; i++){
+						for (var j = 0; j < childMeshes.length; j++){
+							if(childMeshes[j] === smokeBlasts[i].emitter){
+								smokeBlasts[i].start();
+								//clone the cannonBall, make it visible, and add a physics imposter to it. Finally apply a force by scaling the up vector of the particle emitter box
+								var cannonBallClone = cannonBall.clone("cannonBallClone")
+								cannonBallClone.isVisible = true;
+								cannonBallClone.position = childMeshes[j].absolutePosition;
+								cannonBallClone.physicsImpostor = new BABYLON.PhysicsImpostor(cannonBallClone, BABYLON.PhysicsImpostor.SphereImpostor, {mass:10, friction:1.5, restitution:0.2}, scene);
+								cannonBallClone.physicsImpostor.applyImpulse(childMeshes[j].up.scale(1050), BABYLON.Vector3.Zero());
+								//create an action manager for the cannonBallClone that will fire when intersecting the killbox.
+								// It will create a small explosion at the intersection and the cannonball disapears
+								cannonBallClone.actionManager = new BABYLON.ActionManager(scene);
+								cannonBallClone.actionManager.registerAction(
+									new BABYLON.ExecuteCodeAction(
+										{
+										trigger:BABYLON.ActionManager.OnIntersectionEnterTrigger,
+										parameter:killBox
+										}, 
+										function(){
+											BABYLON.ParticleHelper.CreateAsync("explosion", this.scene).then((set) => {
+												set.systems.forEach((s) => {
+												  s.emitter = cannonBallClone.position;
+												  s.disposeOnStop = true;
+												});
+												set.start();
+											});
+											scene.assets.explosion.play();
+											cannonBallClone.dispose();
+										}
+									)
+								);
+							}
+						}
+					}
+					scene.assets.cannonSound.play();
+				}
+			}
+		};
 	}
-	
 }
 
 function createBoat(scene){
