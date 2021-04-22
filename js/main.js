@@ -1,5 +1,6 @@
 import Shark from "./Shark.js";
-
+import Dwarf from "./Dwarf.js";
+import Player from "./Player.js"
 let scene;
 let canvas;
 let engine;
@@ -16,9 +17,17 @@ function startGame() {
 	modifySettings();
     
 	scene.toRender = () => {
-	  let deltaTime = engine.getDeltaTime();
+		let deltaTime = engine.getDeltaTime();
+
+		//all action for our player
+		movePlayer(scene);
+
+
+		//all action for mobs
+		moveShark();
+		moveDwarf();
     
-	  scene.render();
+		scene.render();
 	};
   
 	scene.assetsManager.load();
@@ -29,7 +38,7 @@ function createScene() {
   
 	scene.assetsManager = configureAssetManager(scene);
 
-	let camera = new BABYLON.ArcRotateCamera("Camera", 3 * Math.PI / 2, Math.PI / 4, 100, BABYLON.Vector3.Zero(), scene);
+	let camera = new BABYLON.ArcRotateCamera("Camera", 3 * Math.PI / 2, Math.PI / 4, 100, new BABYLON.Vector3(10,100,10), scene);
 	camera.attachControl(canvas, true);
 	
 	let ground = createGround(scene);
@@ -38,7 +47,10 @@ function createScene() {
   
 	createIslands(scene);
 	createFort(scene);
+	createBoat(scene);
+	createPlayer(scene);
 	createFishes(scene);
+	createDwarf(scene);
 	createSkybox(scene);
 	loadSounds(scene);
 
@@ -58,7 +70,7 @@ function configureAssetManager(scene) {
 	  totalCount,
 	  lastFinishedTask
 	) {
-	  engine.loadingUIText =
+	  engine.loadingUIText = "\n" +
 		"We are loading the scene. " +
 		remainingCount +
 		" out of " +
@@ -115,7 +127,7 @@ function createButtons(){
 }
 
 function createSkybox(scene){
-	var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:3300.0}, scene);
+    var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:3300.0}, scene);
     var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
     skyboxMaterial.backFaceCulling = false;
     skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("assets/Skybox/TropicalSunnyDay", scene);
@@ -222,7 +234,7 @@ function getRandomInt(max) {
 
 function createIslands(scene) {
 
-	let meshTask = scene.assetsManager.addMeshTask("islands task","","assets/","scene.glb");
+	let meshTask = scene.assetsManager.addMeshTask("islands task","","assets/meshes/scene/","îles.glb");
   
 	meshTask.onSuccess = function (task) {
 	  onIslandImported(
@@ -258,7 +270,7 @@ function createIslands(scene) {
 }
 
 function createFort(scene){
-	let fortTask = scene.assetsManager.addMeshTask("fort task","","assets/","fort.glb");
+	let fortTask = scene.assetsManager.addMeshTask("fort task","","assets/meshes/scene/","fort.glb");
 	fortTask.onSuccess = function (task) {
 	  onFortImported(
 		task.loadedMeshes,
@@ -271,7 +283,7 @@ function createFort(scene){
 		fort.scaling = new BABYLON.Vector3(26,26,26);
 	}
 	
-	let cannonTask = scene.assetsManager.addMeshTask("cannon task","","assets/","cannon.glb");
+	let cannonTask = scene.assetsManager.addMeshTask("cannon task","","assets/meshes/canons/","cannon.glb");
   
 	cannonTask.onSuccess = function (task) {
 	  onCannonImported(
@@ -306,8 +318,28 @@ function createFort(scene){
 	
 }
 
+function createBoat(scene){
+	let boatTask = scene.assetsManager.addMeshTask("boat task","", "assets/meshes/Boat/", "Epave.glb");
+
+	boatTask.onSuccess = function (task) {
+		onBoatImport(
+		  task.loadedMeshes
+		);
+	};
+
+    function onBoatImport(newMeshes){
+		let boat = newMeshes[0];
+		//console.log (boat);
+        boat.position = new BABYLON.Vector3(-440, 2, 240);
+        boat.scaling = new BABYLON.Vector3(8  , 8 , 8);
+
+        boat.name = "boat";
+	}    
+}
+
+
 function createFishes(scene){
-	let sharkTask = scene.assetsManager.addMeshTask("sharktask","","assets/","shark.glb");
+	let sharkTask = scene.assetsManager.addMeshTask("sharktask","","assets/meshes/mob/","shark.glb");
 
 	sharkTask.onSuccess = function (task) {
 		onSharkImported(
@@ -316,12 +348,113 @@ function createFishes(scene){
 	};
 
 	function onSharkImported(Meshes, skeletons){
-		const shark = Meshes[0];
-		shark.position = new BABYLON.Vector3(380,-22,160)
-		shark.scaling = new BABYLON.Vector3(10,10,10)
-		let hero = new Shark(shark, 0, 1, 10, scene);
-	}
+		let shark = Meshes[0];
+		shark.position = new BABYLON.Vector3(380,-22,160);
+		shark.scaling = new BABYLON.Vector3(10,10,10);
 
+		let target = new BABYLON.Vector3(0,0,0)
+        let direction = target.subtract(shark.position);
+		//console.log("shark direction ",direction);
+		//console.log ("normalize shark direction ",direction.normalize())
+
+		shark.rotationQuaternion.x = 0;
+		shark.rotationQuaternion.y = 0.7071;
+		shark.rotationQuaternion.z = 0;
+		shark.rotationQuaternion.w = -0.7071;
+		shark.name = "shark";
+		shark.showBoundingBox = true;
+		let _shark = new Shark(shark, 0, 1, 10, scene);
+	}
+}
+
+function moveShark(){
+	let sharky = scene.getMeshByName("shark");
+	if (sharky){
+		sharky.Shark.move();
+		//console.log(sharky.position);
+	} 
+}
+
+function createDwarf(scene){
+	let dwarfTask = scene.assetsManager.addMeshTask("dwarf task","","assets/meshes/mob/","Dwarf.glb");
+
+	dwarfTask.onSuccess = function (task) {
+		onDwarfImported(
+			task.loadedMeshes,
+			task.loadSkeletons
+		);
+	};
+
+	function onDwarfImported(Meshes, skeletons){
+		let dwarf = Meshes[0];
+		//pos
+		dwarf.position = new BABYLON.Vector3(70, 8, -20);
+
+		//console.log("initial dwarf scaling ",dwarf.scaling);
+		dwarf.scaling = new BABYLON.Vector3(22,22,22);
+		//console.log("update dwarf scaling ",dwarf.scaling);
+
+		let target = new BABYLON.Vector3(0,0,0)
+        let direction = target.subtract(dwarf.position);
+		//console.log(direction);
+		//console.log (direction.normalize())
+
+		/*shark.rotationQuaternion.x = 0;
+		shark.rotationQuaternion.y = 0.7071;
+		shark.rotationQuaternion.z = 0;
+		shark.rotationQuaternion.w = -0.7071;*/
+		dwarf.name = "dwarf";
+		dwarf.showBoundingBox = true;
+		let _dwarf = new Dwarf(dwarf, 0, 1, 10, scene);
+	}
+}
+
+function moveDwarf(){
+	let dwarfy = scene.getMeshByName("dwarf");
+	if (dwarfy){
+		dwarfy.Dwarf.move();
+		//console.log(dwarfy.position);
+	} 
+}
+
+function createPlayer(scene){
+	let playerTask = scene.assetsManager.addMeshTask("playertask","","assets/meshes/mob/","Player.glb");
+
+	playerTask.onSuccess = function (task) {
+		onPlayerImported(
+			task.loadedMeshes,
+			task.loadSkeletons
+		);
+	};
+
+	function onPlayerImported(Meshes, skeletons){
+		let player = Meshes[0];
+		
+		//pos
+		player.position = new BABYLON.Vector3(25, 80, -15);
+
+		//scaling
+		//console.log("initial player scaling ",player.scaling);
+		player.scaling = new BABYLON.Vector3(22,22,22);
+		//console.log("update player scaling ",player.scaling);
+
+		/*shark.rotationQuaternion.x = 0;
+		shark.rotationQuaternion.y = 0.7071;
+		shark.rotationQuaternion.z = 0;
+		shark.rotationQuaternion.w = -0.7071;*/
+		player.name = "Player";
+		player.showBoundingBox = true;
+		
+		let _player = new Player(player, 0, 1, 10, scene);
+	}
+}
+
+function movePlayer(scene){
+	let player = scene.getMeshByName("player");
+	if (player){
+		player.Player.move(scene);
+		console.log(player.position);
+	} 
 }
 
 window.addEventListener("resize", () => {
@@ -329,27 +462,13 @@ window.addEventListener("resize", () => {
 });
   
 function modifySettings() {
-	// as soon as we click on the game window, the mouse pointer is "locked"
-	// you will have to press ESC to unlock it
-	scene.onPointerDown = () => {
-	  if (!scene.alreadyLocked) {
-		console.log("requesting pointer lock");
-		canvas.requestPointerLock();
-	  } else {
-		console.log("Pointer already locked");
-	  }
-	};
-  
-	document.addEventListener("pointerlockchange", () => {
-	  let element = document.pointerLockElement || null;
-	  if (element) {
-		// lets create a custom attribute
-		scene.alreadyLocked = true;
-	  } else {
-		scene.alreadyLocked = false;
-	  }
-	});
-  
+
+	scene.inputStates = {};
+  	scene.inputStates.left = false;
+  	scene.inputStates.right = false;
+  	scene.inputStates.up = false;
+  	scene.inputStates.down = false;
+
 	//add the listener to the main, window object, and update the states
 	window.addEventListener(
 	  "keydown",
@@ -374,14 +493,6 @@ function modifySettings() {
 		  event.key === "S"
 		) {
 		  scene.inputStates.down = true;
-		} else if (event.key === " ") {
-		  scene.inputStates.space = true;
-		} else if (event.key === "l" || event.key === "L") {
-		  scene.inputStates.laser = true;
-		} else if (event.key == "t" || event.key == "T") {
-		  scene.activeCamera = scene.followCameraTank;
-		} else if (event.key == "y" || event.key == "Y") {
-		  scene.activeCamera = scene.followCameraDude;
 		}
 	  },
 	  false
@@ -417,4 +528,4 @@ function modifySettings() {
 	  },
 	  false
 	);
-  }
+}

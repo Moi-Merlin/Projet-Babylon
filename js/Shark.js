@@ -20,8 +20,11 @@ export default class Shark {
         this.bounder.sharkMesh = this.sharkMesh;
     }
 
-    move(scene) {
-        if (!this.bounder) return;
+    move(){
+        if (!this.bounder) {
+            console.log("no bonder");
+            return;
+        }
 
         this.sharkMesh.position = new BABYLON.Vector3(
             this.bounder.position.x,
@@ -31,50 +34,42 @@ export default class Shark {
 
         let target = new BABYLON.Vector3(0,0,0)
         let direction = target.subtract(this.sharkMesh.position);
-        let distance = direction.length(); 
+        let distance = direction.length();
+        //console.log(distance);
         let dir = direction.normalize();
 
         let alpha = Math.atan2(-dir.x, -dir.z);
 
         this.sharkMesh.rotation.y = alpha;
 
-        if(distance<200 && distance > 30) {
+        if(distance<1000 && distance > 80) {
             this.bounder.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
         }
-        else {
-        }   
     }
 
     calculateBoundingBoxParameters() {
-        let childrenMeshes = this.sharkMesh.getChildren();
-        let bbInfo = this.totalBoundingInfo(childrenMeshes);
-
+        //let childrenMeshes = this.sharkMesh.getChildren();
+        //console.log(childrenMeshes);
+        let bbInfo = this.totalBoundingInfo(this.sharkMesh);
         return bbInfo;
     }
 
     totalBoundingInfo(meshes){
-        var boundingInfo = meshes[0].getBoundingInfo();
-        var min = boundingInfo.minimum.add(meshes[0].position);
-        var max = boundingInfo.maximum.add(meshes[0].position);
-        for(var i=1; i<meshes.length; i++){
+        var boundingInfo = meshes.getBoundingInfo();
+        var min = boundingInfo.minimum.add(meshes.position);
+        var max = boundingInfo.maximum.add(meshes.position);
+        /*for(var i=1; i<meshes.length; i++){
             boundingInfo = meshes[i].getBoundingInfo();
             min = BABYLON.Vector3.Minimize(min, boundingInfo.minimum.add(meshes[i].position));
             max = BABYLON.Vector3.Maximize(max, boundingInfo.maximum.add(meshes[i].position));
-        }
+        }*/
         return new BABYLON.BoundingInfo(min, max);
     }
 
     createBoundingBox() {
         // Create a box as BoundingBox of the Shark
-        let bounder = new BABYLON.Mesh.CreateBox(
-        "bounder" + this.id.toString(),
-        1,
-        this.scene
-        );
-        let bounderMaterial = new BABYLON.StandardMaterial(
-        "bounderMaterial",
-        this.scene
-        );
+        let bounder = new BABYLON.Mesh.CreateBox("bounder" + this.id.toString(),1,this.scene);
+        let bounderMaterial = new BABYLON.StandardMaterial("bounderMaterial",this.scene);
         bounderMaterial.alpha = 0.4;
         bounder.material = bounderMaterial;
         bounder.checkCollisions = true;
@@ -94,6 +89,8 @@ export default class Shark {
         bounder.isVisible = true;
 
         bounder.position.y += (max._y - min._y) * this.scaling/2;
+
+        bounder.isVisible = true;
 
         return bounder;
     }
