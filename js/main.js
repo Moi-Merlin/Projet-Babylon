@@ -549,7 +549,8 @@ function createFishes(scene){
 
 		let max = bbInfo.boundingBox.maximum;
 		let min = bbInfo.boundingBox.minimum;
-		console.log("infos ",min , max);
+		console.log("infos ",min , max); //problème intéréssant la bouding box existante est de taille nulle donc l'ensemble du code suivant 
+										 // ne sera pas fonctionel. Cause du problème inconnue .....
 		console.log("bbtaille init ",bounderShark);
 		bounderShark.scaling.x = (max._x - min._x) * shark.scaling.x*0.95;
 		bounderShark.scaling.y = (max._y - min._y) * shark.scaling.y*1.35;
@@ -561,7 +562,7 @@ function createFishes(scene){
 
 		shark.bounder = bounderShark;
 		shark.showBoundingBox = true;
-		shark.showSubMeshesBoundingBox = true;
+		shark.showSubMeshesBoundingBox = true; //aucune boundingBox visible logique puisque la taille de celle ci est nulle
 		console.log("shark ",shark);
 
 		let _shark = new Shark(shark, 0, 1, 10, scene,bounderShark);
@@ -613,7 +614,7 @@ function createDwarf(scene){
 
 		let max = bbInfo.boundingBox.maximum;
 		let min = bbInfo.boundingBox.minimum;
-		console.log("infos ",min , max);
+		console.log("infos ",min , max); // ici problème identique a celui détecté dans le code du requin ....
 		console.log("bbtaille init ",bounderDwarf);
 		bounderDwarf.scaling.x = (max._x - min._x) * dwarf.scaling.x*0.95;
 		bounderDwarf.scaling.y = (max._y - min._y) * dwarf.scaling.y*1.35;
@@ -686,7 +687,8 @@ function createPlayer(scene){
 		player.showBoundingBox = true;
 
 		
-		console.log(skeletons);
+		console.log(skeletons); //Le skequelette est undefined alors qu'il apparaît dans l'inspecteur si on ouvre le meshe dans le 
+								//sandbox.... de ce fait l'ensemble des animations ne peuvent pas se lancer.
 		const idle = scene.beginWeightedAnimation(skeletons[0],630,1101,1,true,1);
 		const ending = scene.beginWeightedAnimation(skeletons[0],0,120,0,false,1);
 		const failed = scene.beginWeightedAnimation(skeletons[0],130,132,1.0,false,1);
