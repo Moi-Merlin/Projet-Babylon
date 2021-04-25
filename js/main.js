@@ -1,11 +1,14 @@
 import Shark from "./Shark.js";
 import Dwarf from "./Dwarf.js";
-import Player from "./Player.js"
 let scene;
 let canvas;
 let engine;
 
 window.onload = startGame;
+
+//==========================================================
+//						Main loop
+//==========================================================
 
 function startGame() {
 	canvas = document.querySelector("#myCanvas");
@@ -32,6 +35,10 @@ function startGame() {
 	scene.assetsManager.load();
 }
 
+//====================================================================
+//						Scene and config
+//====================================================================
+
 function createScene() {
 	let scene = new BABYLON.Scene(engine);
   
@@ -53,7 +60,7 @@ function createScene() {
 	createPlayer(scene);
 	createFishes(scene);
 	createDwarf(scene);
-	createSkybox(scene);
+	//createSkybox(scene);
 	loadSounds(scene);
 
 	createButtons();
@@ -94,38 +101,6 @@ function configureAssetManager(scene) {
 	};
   
 	return assetsManager;
-}
-
-function createButtons(){
-	var button = document.createElement("button");
-    button.style.top = "30px";
-    button.style.right = "30px";
-    button.textContent = "Pause Music";
-    button.style.width = "50px"
-    button.style.height = "50px"
-
-    button.setAttribute = ("id", "soundButton");
-    button.style.position = "absolute";
-	button.style.color = "whitesmoke";
-	button.style.borderColor = "transparent"
-	button.style.borderRadius = "2em";
-	button.style.outline = "none";
-	button.style.backgroundColor = "rgba(166, 204, 210,0.5)";
-
-    document.body.appendChild(button);
-
-	button.addEventListener("click", () => {
-        if (scene.assets.pirateMusic) {
-			if (button.textContent == "Pause Music"){
-				scene.assets.pirateMusic.pause()
-				button.textContent = "Play Music";
-			}
-			else if (button.textContent == "Play Music"){
-				scene.assets.pirateMusic.play()
-				button.textContent = "Pause Music";
-			}
-        }
-    })
 }
 
 function createSkybox(scene){
@@ -229,6 +204,46 @@ function loadSounds(scene) {
 	  );
 	};
 }
+
+//===============================================================
+//								Overlay
+//===============================================================
+
+function createButtons(){
+	var button = document.createElement("button");
+    button.style.top = "30px";
+    button.style.right = "30px";
+    button.textContent = "Pause Music";
+    button.style.width = "50px"
+    button.style.height = "50px"
+
+    button.setAttribute = ("id", "soundButton");
+    button.style.position = "absolute";
+	button.style.color = "whitesmoke";
+	button.style.borderColor = "transparent"
+	button.style.borderRadius = "2em";
+	button.style.outline = "none";
+	button.style.backgroundColor = "rgba(166, 204, 210,0.5)";
+
+    document.body.appendChild(button);
+
+	button.addEventListener("click", () => {
+        if (scene.assets.pirateMusic) {
+			if (button.textContent == "Pause Music"){
+				scene.assets.pirateMusic.pause()
+				button.textContent = "Play Music";
+			}
+			else if (button.textContent == "Play Music"){
+				scene.assets.pirateMusic.play()
+				button.textContent = "Pause Music";
+			}
+        }
+    })
+}
+
+//==============================================================
+//						Meshes import
+//==============================================================
 
 function getRandomInt(max) {
     return Math.floor(Math.random() * max);
@@ -518,17 +533,39 @@ function createFishes(scene){
 		shark.rotationQuaternion.z = 0;
 		shark.rotationQuaternion.w = -0.7071;
 		shark.name = "shark";
-		shark.showBoundingBox = true;
-		let _shark = new Shark(shark, 0, 1, 10, scene);
-	}
-}
+		
+		// Create a box as BoundingBox of the dwarf
+		let bounderShark = new BABYLON.Mesh.CreateBox("bounder" + shark.name,1,scene);
+		let bounderMaterial = new BABYLON.StandardMaterial("bounderMaterial",scene);
+		bounderMaterial.alpha = 0.4;
+		bounderShark.material = bounderMaterial;
+		bounderShark.checkCollisions = true;
 
-function moveShark(){
-	let sharky = scene.getMeshByName("shark");
-	if (sharky){
-		sharky.Shark.move();
-		//console.log(sharky.position);
-	} 
+		bounderShark.position = shark.position.clone();
+
+		let bbInfo = shark.getBoundingInfo();
+		console.log("======SHARK==========");
+		console.log(bbInfo);
+
+		let max = bbInfo.boundingBox.maximum;
+		let min = bbInfo.boundingBox.minimum;
+		console.log("infos ",min , max);
+		console.log("bbtaille init ",bounderShark);
+		bounderShark.scaling.x = (max._x - min._x) * shark.scaling.x*0.95;
+		bounderShark.scaling.y = (max._y - min._y) * shark.scaling.y*1.35;
+		bounderShark.scaling.z = (max._z - min._z) * shark.scaling.z*0.5;
+		console.log("bbox taille ", bounderShark.scaling);
+		bounderShark.isVisible = false;
+
+		bounderShark.position.y = shark.position.y + 1.15 * bounderShark.scaling.y;
+
+		shark.bounder = bounderShark;
+		shark.showBoundingBox = true;
+		shark.showSubMeshesBoundingBox = true;
+		console.log("shark ",shark);
+
+		let _shark = new Shark(shark, 0, 1, 10, scene,bounderShark);
+	}
 }
 
 function createDwarf(scene){
@@ -560,9 +597,124 @@ function createDwarf(scene){
 		shark.rotationQuaternion.z = 0;
 		shark.rotationQuaternion.w = -0.7071;*/
 		dwarf.name = "dwarf";
+
+		// Create a box as BoundingBox of the dwarf
+		let bounderDwarf = new BABYLON.Mesh.CreateBox("bounder" + dwarf.name,1,scene);
+		let bounderMaterial = new BABYLON.StandardMaterial("bounderMaterial",scene);
+		bounderMaterial.alpha = 0.4;
+		bounderDwarf.material = bounderMaterial;
+		bounderDwarf.checkCollisions = true;
+
+		bounderDwarf.position = dwarf.position.clone();
+
+		let bbInfo = dwarf.getBoundingInfo();
+		console.log("==================NAIN================");
+		console.log(bbInfo);
+
+		let max = bbInfo.boundingBox.maximum;
+		let min = bbInfo.boundingBox.minimum;
+		console.log("infos ",min , max);
+		console.log("bbtaille init ",bounderDwarf);
+		bounderDwarf.scaling.x = (max._x - min._x) * dwarf.scaling.x*0.95;
+		bounderDwarf.scaling.y = (max._y - min._y) * dwarf.scaling.y*1.35;
+		bounderDwarf.scaling.z = (max._z - min._z) * dwarf.scaling.z*0.5;
+		console.log("bbox taille ", bounderDwarf.scaling);
+		bounderDwarf.isVisible = false;
+
+		bounderDwarf.position.y = dwarf.position.y + 1.15 * bounderDwarf.scaling.y;
+
+		dwarf.bounder = bounderDwarf;
+
 		dwarf.showBoundingBox = true;
-		let _dwarf = new Dwarf(dwarf, 0, 1, 10, scene);
+
+		let _dwarf = new Dwarf(dwarf, 0, 1, 10, scene,bounderDwarf);
 	}
+}
+
+function createPlayer(scene){
+	let playerTask = scene.assetsManager.addMeshTask("playertask","","assets/meshes/mob/Player/","player.babylon");
+
+	playerTask.onSuccess = function (task) {
+		onPlayerImported(
+			task.loadedMeshes,
+			task.loadSkeletons,
+		);
+	};
+
+	function onPlayerImported(Meshes, skeletons){
+		let player = Meshes[0];
+		//console.log(player);
+		
+		//pos
+		player.position = new BABYLON.Vector3(25, 65, -15);
+
+		//scaling
+		//console.log("initial player scaling ",player.scaling);
+		player.scaling = new BABYLON.Vector3(0.15,0.15,0.15);
+		player.frontVector = new BABYLON.Vector3(0, 0, 0); 
+		//console.log("update player scaling ",player.scaling);
+
+		player.rotation.x = -Math.PI/2;
+		player.name = "player";
+		player.speed = 1;
+
+
+		// Create a box as BoundingBox of the player
+		let bounderPlayer = new BABYLON.Mesh.CreateBox("bounder" + player.name,1,scene);
+		let bounderMaterial = new BABYLON.StandardMaterial("bounderMaterial",scene);
+		bounderMaterial.alpha = 0.4;
+		bounderPlayer.material = bounderMaterial;
+		bounderPlayer.checkCollisions = true;
+
+		bounderPlayer.position = player.position.clone();
+
+		let bbInfo = player.getBoundingInfo();
+
+		let max = bbInfo.boundingBox.maximum;
+		let min = bbInfo.boundingBox.minimum;
+		//console.log("infos ",min , max);
+		//console.log("bbtaille init ",bounderPlayer)
+		bounderPlayer.scaling.x = (max._x - min._x) * player.scaling.x*0.95;
+		bounderPlayer.scaling.y = (max._y - min._y) * player.scaling.y*1.35;
+		bounderPlayer.scaling.z = (max._z - min._z) * player.scaling.z*0.5;
+		//console.log("bbox taille ",bounderPlayer.scaling);
+		bounderPlayer.isVisible = false;
+
+		bounderPlayer.position.y = player.position.y + 1.15*bounderPlayer.scaling.y;
+
+		player.bounder = bounderPlayer;
+		player.showBoundingBox = true;
+
+		
+		console.log(skeletons);
+		const idle = scene.beginWeightedAnimation(skeletons[0],630,1101,1,true,1);
+		const ending = scene.beginWeightedAnimation(skeletons[0],0,120,0,false,1);
+		const failed = scene.beginWeightedAnimation(skeletons[0],130,132,1.0,false,1);
+		const fireball = scene.beginWeightedAnimation(skeletons[0],140,343,0,false,1);
+		const genkidama = scene.beginWeightedAnimation(skeletons[0],6350,619,0,false,1);
+		const walk = scene.beginWeightedAnimation(skeletons[0],1120,1186,0,false,1);
+
+		idle.syncWith(null);
+		failed.syncWith(idle);
+
+		while(failed.weight >  0){
+			failed.weight -= 0.1;
+			idle.weight += 0.1;
+		}
+	}
+}
+
+
+//=================================================================
+//							Movement
+//=================================================================
+
+function moveShark(){
+	let sharky = scene.getMeshByName("shark");
+	if (sharky){
+		sharky.Shark.move();
+		//console.log(sharky.position);
+	} 
 }
 
 function moveDwarf(){
@@ -573,45 +725,48 @@ function moveDwarf(){
 	} 
 }
 
-function createPlayer(scene){
-	let playerTask = scene.assetsManager.addMeshTask("playertask","","assets/meshes/mob/","Player.glb");
-
-	playerTask.onSuccess = function (task) {
-		onPlayerImported(
-			task.loadedMeshes,
-			task.loadSkeletons
-		);
-	};
-
-	function onPlayerImported(Meshes, skeletons){
-		let player = Meshes[0];
-		
-		//pos
-		player.position = new BABYLON.Vector3(25, 80, -15);
-
-		//scaling
-		//console.log("initial player scaling ",player.scaling);
-		player.scaling = new BABYLON.Vector3(22,22,22);
-		//console.log("update player scaling ",player.scaling);
-
-		/*shark.rotationQuaternion.x = 0;
-		shark.rotationQuaternion.y = 0.7071;
-		shark.rotationQuaternion.z = 0;
-		shark.rotationQuaternion.w = -0.7071;*/
-		player.name = "Player";
-		player.showBoundingBox = true;
-		
-		let _player = new Player(player, 0, 1, 10, scene);
-	}
-}
-
 function movePlayer(scene){
 	let player = scene.getMeshByName("player");
+	
 	if (player){
-		player.Player.move(scene);
-		console.log(player.position);
+		//console.log(player.bounder);
+		//console.log(player.Player);
+		//if (!player.Player.bounder) return;
+	
+		//console.log("déplacement");
+		//console.log(player.playerMesh);
+		/*player.playerMesh.position.x = this.bounder.position.x;
+		this.playerMesh.position.z = this.bounder.position.z;
+		this.playerMesh.position.y = this.bounder.position.y;
+		
+		if (scene.inputStates.up) {
+			this.bounder.moveWithCollisions(
+			this.frontVector.multiplyByFloats(this.speed, this.speed, this.speed)
+			);
+		}
+	
+		if (scene.inputStates.down) {
+			this.bounder.moveWithCollisions(
+			this.frontVector.multiplyByFloats(-this.speed, -this.speed, -this.speed)
+			);
+		}
+	
+		if (scene.inputStates.left) {
+			var alpha = this.playerMesh.rotation.y;
+			alpha -= 0.02;
+			this.frontVector = new BABYLON.Vector3(-Math.sin(alpha), 0, -Math.cos(alpha));
+		}
+		if (scene.inputStates.right) {
+			var alpha = this.playerMesh.rotation.y;
+			alpha += 0.02;
+			this.frontVector = new BABYLON.Vector3(-Math.sin(alpha), 0,-Math.cos(alpha));
+		}*/
 	} 
 }
+
+//=============================================================================================
+//							Setting
+//=============================================================================================
 
 window.addEventListener("resize", () => {
 	engine.resize();
