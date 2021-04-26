@@ -514,11 +514,13 @@ function createFishes(scene){
 
 	sharkTask.onSuccess = function (task) {
 		onSharkImported(
-			task.loadedMeshes
+			task.loadedMeshes,
+			task.loadedParticleSystems,
+			task.loadedSkeletons
 		);
 	};
 
-	function onSharkImported(Meshes, skeletons){
+	function onSharkImported(Meshes, particles, skeletons){
 		let shark = Meshes[0];
 		shark.position = new BABYLON.Vector3(380,-22,160);
 		shark.scaling = new BABYLON.Vector3(10,10,10);
@@ -575,11 +577,12 @@ function createDwarf(scene){
 	dwarfTask.onSuccess = function (task) {
 		onDwarfImported(
 			task.loadedMeshes,
+			task.loadedParticleSystems,
 			task.loadSkeletons
 		);
 	};
 
-	function onDwarfImported(Meshes, skeletons){
+	function onDwarfImported(Meshes, particles, skeletons){
 		let dwarf = Meshes[0];
 		//pos
 		dwarf.position = new BABYLON.Vector3(70, 8, -20);
@@ -638,12 +641,14 @@ function createPlayer(scene){
 	playerTask.onSuccess = function (task) {
 		onPlayerImported(
 			task.loadedMeshes,
-			task.loadSkeletons,
+			task.loadedParticleSystems,
+			task.loadSkeletons
 		);
 	};
 
-	function onPlayerImported(Meshes, skeletons){
+	function onPlayerImported(Meshes, particles, skeletons){
 		let player = Meshes[0];
+		console.log("=============JOUEUR=========");
 		//console.log(player);
 		
 		//pos
