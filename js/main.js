@@ -3,6 +3,8 @@ import Dwarf from "./Dwarf.js";
 let scene;
 let canvas;
 let engine;
+let score = 0;
+let clickMenu = 0;
 
 window.onload = startGame;
 
@@ -62,7 +64,7 @@ function createScene() {
 	createbridge(scene);
 	createDwarf(scene);
 	createDeapSea(scene);
-	createSkybox(scene);
+	//createSkybox(scene);
 	createSem(scene);
 	createHouse(scene);
 	loadSounds(scene);
@@ -218,13 +220,11 @@ function createButtons(){
     button.style.top = "30px";
     button.style.right = "30px";
     button.textContent = "Pause Music";
-    button.style.width = "50px"
-    button.style.height = "50px"
-
-    button.setAttribute = ("id", "soundButton");
+    button.style.width = "50px";
+    button.style.height = "50px";
     button.style.position = "absolute";
 	button.style.color = "whitesmoke";
-	button.style.borderColor = "transparent"
+	button.style.borderColor = "transparent";
 	button.style.borderRadius = "2em";
 	button.style.outline = "none";
 	button.style.backgroundColor = "rgba(166, 204, 210,0.5)";
@@ -243,6 +243,52 @@ function createButtons(){
 			}
         }
     })
+
+	var scoreDisplay = document.createElement("score");
+	scoreDisplay.textContent = "SCORE : "+score;
+	scoreDisplay.style.top = "30px";
+    scoreDisplay.style.left = "30px";
+	scoreDisplay.style.position = "absolute";
+	scoreDisplay.style.color = "whitesmoke";
+	scoreDisplay.style.fontSize = "30px";
+	scoreDisplay.style.fontFamily = "Arial"
+	document.body.appendChild(scoreDisplay);
+
+	var control = document.createElement("control");
+	control.style.top = "110px";
+    control.style.right = "30px";
+    control.textContent = "Hide Menu";
+	control.style.fontSize = "14px";
+	control.style.pading = "1em";
+    control.style.width = "50px";
+    control.style.height = "50px";
+    control.style.position = "absolute";
+	control.style.color = "whitesmoke";
+	control.style.borderColor = "transparent";
+	control.style.borderRadius = "2em";
+	control.style.outline = "none";
+	control.style.backgroundColor = "rgba(166, 204, 210,0.5)";
+	control.style.textAlign = "center";
+	document.body.appendChild(control)
+
+	control.addEventListener("click", () => {
+        menu()
+		if(control.innerHTML=="Hide Menu"){control.innerHTML="Show Menu"}
+		else if(control.innerHTML=="Show Menu"){control.innerHTML="Hide Menu"}
+    })
+
+
+}
+
+function menu(){
+	clickMenu += 1;
+    if(clickMenu % 2 == 1){document.querySelector("#Menu").className = "MenuNotDisplayed";}
+	else{document.querySelector("#Menu").className = "MenuOnDisplay";}
+}
+
+function loadScore(){
+	var scoretoDisplay = document.getElementsByTagName("score");
+	scoretoDisplay.textContent = "SCORE : "+score;
 }
 
 //==============================================================
@@ -538,7 +584,7 @@ function createDeapSea(scene){
 		let sea = meshes[0]
 		sea.scaling = new BABYLON.Vector3(10,10,10);
 		sea.position = new BABYLON.Vector3(750,-140,520);
-		sea.rotation = new BABYLON.Vector3(BABYLON.Tools.ToRadians(2),BABYLON.Tools.ToRadians(150),0)
+		sea.rotation = new BABYLON.Vector3(BABYLON.Tools.ToRadians(2),BABYLON.Tools.ToRadians(150),0);
 	}
 }
 
@@ -551,7 +597,17 @@ function createSem(scene){
 		let grave = meshes[0]
 		grave.scaling = new BABYLON.Vector3(0.6,0.6,0.6);
 		grave.position = new BABYLON.Vector3(-555,11,-1030);
-		frave.rotation = new BABYLON.Vector3(0,BABYLON.Tools.ToRadians(150),0)
+		frave.rotation = new BABYLON.Vector3(0,BABYLON.Tools.ToRadians(150),0);
+	}
+
+	let skullTask = scene.assetsManager.addMeshTask("skulltask","","assets/meshes/graveyard/","crâne.glb")
+	skullTask.onSuccess = function(task){
+		onSkullImported(task.loadedMeshes)
+	}
+	function onSkullImported(meshes){
+		skull = meshes[1]
+		skull.scaling = new BABYLON.Vector3(5,5,5)
+		skull.position = new BABYLON.Vector3(-570,50,-1030);
 	}
 }
 

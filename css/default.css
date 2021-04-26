@@ -1,10 +1,30 @@
 html, body {
     padding:0px;
     margin:0px;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 #myCanvas {
     border:1px;
     width:100%;
     height:100%;
+}
+
+.MenuOnDisplay{
+    top: 100px;
+    right: 450px;
+    position: absolute;
+    width : 500px;
+    height: 500px;
+    position : absolute;
+    color : whitesmoke;
+    border-color : transparent;
+    border-radius : 2em;
+    outline : none;
+    background-color : rgba(166, 204, 210,0.5);
+    text-align : center;
+}
+
+.MenuNotDisplayed{
+    display: none;
 }
