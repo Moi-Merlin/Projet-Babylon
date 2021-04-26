@@ -59,8 +59,12 @@ function createScene() {
 	createBoat(scene);
 	createPlayer(scene);
 	createFishes(scene);
+	createbridge(scene);
 	createDwarf(scene);
-	//createSkybox(scene);
+	createDeapSea(scene);
+	createSkybox(scene);
+	createSem(scene);
+	createHouse(scene);
 	loadSounds(scene);
 
 	createButtons();
@@ -122,13 +126,13 @@ function createGround(scene){
 	groundTexture.vScale = groundTexture.uScale = 4.0;
 	var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
 	groundMaterial.diffuseTexture = groundTexture;
-	var ground = BABYLON.Mesh.CreateGround("ground", 3000, 3000, 32, scene, false);
-	ground.position.y = -20;
+	var ground = BABYLON.Mesh.CreateGround("ground", 3100, 3100, 32, scene, false);
+	ground.position.y = -150;
 	ground.material = groundMaterial;
 
 	//On crée ensuite un second sol qui est un Water Material, il représente la mer
 	//On lui donne des attributs qui nous permettent de créer des vagues avec un effet de vent
-	var waterMesh = BABYLON.Mesh.CreateGround("sea", 3000, 3000, 32, scene, false);
+	var waterMesh = BABYLON.Mesh.CreateGround("sea", 3100, 3100, 32, scene, false);
 	var water = new BABYLON.WaterMaterial("water", scene, new BABYLON.Vector2(1024, 1024));
 	water.bumpTexture = new BABYLON.Texture("assets/textures/waterbump.png", scene);
 	water.windForce = -6;
@@ -508,6 +512,61 @@ function createBoat(scene){
 	}    
 }
 
+function createbridge(scene){
+	let bridgeTask = scene.assetsManager.addMeshTask("bridgetask","","assets/meshes/scene/","garden.glb")
+
+	bridgeTask.onSuccess = function(task){
+		onBridgeImported(task.loadedMeshes)
+	}
+
+	function onBridgeImported(meshes){
+		let bridge = meshes[0]
+		bridge.scaling = new BABYLON.Vector3(23,23,23);
+		bridge.position = new BABYLON.Vector3(650,-23,-320);
+		bridge.rotation = new BABYLON.Vector3(BABYLON.Tools.ToRadians(2),BABYLON.Tools.ToRadians(150),0)
+	}
+}
+
+function createDeapSea(scene){
+	let seaTask = scene.assetsManager.addMeshTask("bridgetask","","assets/meshes/scene/","sea.glb")
+
+	seaTask.onSuccess = function(task){
+		onSeaImported(task.loadedMeshes)
+	}
+
+	function onSeaImported(meshes){
+		let sea = meshes[0]
+		sea.scaling = new BABYLON.Vector3(10,10,10);
+		sea.position = new BABYLON.Vector3(750,-140,520);
+		sea.rotation = new BABYLON.Vector3(BABYLON.Tools.ToRadians(2),BABYLON.Tools.ToRadians(150),0)
+	}
+}
+
+function createSem(scene){
+	let centralTask = scene.assetsManager.addMeshTask("gravetask","","assets/meshes/graveyard/","central_grave.glb")
+	centralTask.onSuccess = function(task){
+		onCentralImported(task.loadedMeshes)
+	}
+	function onCentralImported(meshes){
+		let grave = meshes[0]
+		grave.scaling = new BABYLON.Vector3(0.6,0.6,0.6);
+		grave.position = new BABYLON.Vector3(-555,11,-1030);
+		frave.rotation = new BABYLON.Vector3(0,BABYLON.Tools.ToRadians(150),0)
+	}
+}
+
+function createHouse(scene){
+	let houseTask = scene.assetsManager.addMeshTask("house task","","assets/meshes/scene/","house.glb")
+	houseTask.onSuccess = function(task){
+		onHouseImported(task.loadedMeshes)
+	}
+	function onHouseImported(meshes){
+		let house = meshes[0]
+		house.position = new BABYLON.Vector3(600,10,-1220)
+		house.scaling = new BABYLON.Vector3(0.05,0.05,0.05)
+		house.rotation = new BABYLON.Vector3(0,BABYLON.Tools.ToRadians(100),0)
+	}
+}
 
 function createFishes(scene){
 	let sharkTask = scene.assetsManager.addMeshTask("sharktask","","assets/meshes/mob/","shark.glb");
