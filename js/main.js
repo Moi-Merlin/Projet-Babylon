@@ -668,36 +668,36 @@ function createFishes(scene){
 		shark.rotationQuaternion.w = -0.7071;
 		shark.name = "shark";
 		
-		// Create a box as BoundingBox of the dwarf
+		// Create a box as BoundingBox of the shark
 		let bounderShark = new BABYLON.Mesh.CreateBox("bounder" + shark.name,1,scene);
 		let bounderMaterial = new BABYLON.StandardMaterial("bounderMaterial",scene);
 		bounderMaterial.alpha = 0.4;
 		bounderShark.material = bounderMaterial;
 		bounderShark.checkCollisions = true;
-
+	
 		bounderShark.position = shark.position.clone();
-
-		let bbInfo = shark.getBoundingInfo();
-		console.log("======SHARK==========");
+	
+		//Thinks Michel buffa, for calculate manually
+		let bbInfo = calculateBoundingBoxParameters(shark);
+		console.log("==================SHARK================");
 		console.log(bbInfo);
-
+	
 		let max = bbInfo.boundingBox.maximum;
 		let min = bbInfo.boundingBox.minimum;
-		console.log("infos ",min , max); //problème intéréssant la bouding box existante est de taille nulle donc l'ensemble du code suivant 
-										 // ne sera pas fonctionel. Cause du problème inconnue .....
+		console.log("infos ",min , max);
 		console.log("bbtaille init ",bounderShark);
-		bounderShark.scaling.x = (max._x - min._x) * shark.scaling.x*0.95;
-		bounderShark.scaling.y = (max._y - min._y) * shark.scaling.y*1.35;
-		bounderShark.scaling.z = (max._z - min._z) * shark.scaling.z*0.5;
+	
+		bounderShark.scaling.x = (max._z - min._z) * shark.scaling.z;
+		bounderShark.scaling.y = (max._y - min._y) * shark.scaling.y;		
+		bounderShark.scaling.z = (max._x - min._x) * shark.scaling.x;
 		console.log("bbox taille ", bounderShark.scaling);
 		bounderShark.isVisible = false;
-
-		bounderShark.position.y = shark.position.y + 1.15 * bounderShark.scaling.y;
-
+	
+		bounderShark.position.y += (max._y - min._y) * shark.scaling.y/2.5;
+	
 		shark.bounder = bounderShark;
-		shark.showBoundingBox = true;
-		shark.showSubMeshesBoundingBox = true; //aucune boundingBox visible logique puisque la taille de celle ci est nulle
-		console.log("shark ",shark);
+	
+		shark.showBoundingBox = false;
 
 		let _shark = new Shark(shark, 0, 1, 10, scene,bounderShark);
 	}
@@ -705,76 +705,124 @@ function createFishes(scene){
 
 function createDwarf(scene){
 	let dwarfTask = scene.assetsManager.addMeshTask("dwarf task","","assets/meshes/mob/","Dwarf.glb");
-
+	
 	dwarfTask.onSuccess = function (task) {
 		onDwarfImported(
-			task.loadedMeshes,
-			task.loadedParticleSystems,
-			task.loadSkeletons
-		);
+		task.loadedMeshes,
+		task.loadedParticleSystems,
+		task.loadedSkeletons);
 	};
-
+	
 	function onDwarfImported(Meshes, particles, skeletons){
 		let dwarf = Meshes[0];
+		
 		//pos
 		dwarf.position = new BABYLON.Vector3(70, 8, -20);
 
-		//console.log("initial dwarf scaling ",dwarf.scaling);
+		//console.log("initial dwarf scaling ",dwarf.scaling);	
 		dwarf.scaling = new BABYLON.Vector3(22,22,22);
 		//console.log("update dwarf scaling ",dwarf.scaling);
-
+	
 		let target = new BABYLON.Vector3(0,0,0)
-        let direction = target.subtract(dwarf.position);
+		let direction = target.subtract(dwarf.position);
 		//console.log(direction);
 		//console.log (direction.normalize())
-
-		/*shark.rotationQuaternion.x = 0;
-		shark.rotationQuaternion.y = 0.7071;
-		shark.rotationQuaternion.z = 0;
-		shark.rotationQuaternion.w = -0.7071;*/
+	
 		dwarf.name = "dwarf";
-
+	
 		// Create a box as BoundingBox of the dwarf
 		let bounderDwarf = new BABYLON.Mesh.CreateBox("bounder" + dwarf.name,1,scene);
 		let bounderMaterial = new BABYLON.StandardMaterial("bounderMaterial",scene);
 		bounderMaterial.alpha = 0.4;
 		bounderDwarf.material = bounderMaterial;
 		bounderDwarf.checkCollisions = true;
-
+	
 		bounderDwarf.position = dwarf.position.clone();
-
-		let bbInfo = dwarf.getBoundingInfo();
+	
+		//let bbInfo = dwarf.getBoundingInfo();
+		//bbInfo = dwarf.getBoundingInfo();
+	
+		//Thinks Michel buffa, for calculate manually
+		let bbInfo = calculateBoundingBoxParameters(dwarf)
 		console.log("==================NAIN================");
 		console.log(bbInfo);
-
+	
 		let max = bbInfo.boundingBox.maximum;
 		let min = bbInfo.boundingBox.minimum;
-		console.log("infos ",min , max); // ici problème identique a celui détecté dans le code du requin ....
+		console.log("infos ",min , max);
 		console.log("bbtaille init ",bounderDwarf);
-		bounderDwarf.scaling.x = (max._x - min._x) * dwarf.scaling.x*0.95;
-		bounderDwarf.scaling.y = (max._y - min._y) * dwarf.scaling.y*1.35;
-		bounderDwarf.scaling.z = (max._z - min._z) * dwarf.scaling.z*0.5;
+	
+		bounderDwarf.scaling.x = (max._x - min._x) * dwarf.scaling.x;
+		bounderDwarf.scaling.y = (max._y - min._y) * dwarf.scaling.y;		
+		bounderDwarf.scaling.z = (max._z - min._z) * dwarf.scaling.z;
 		console.log("bbox taille ", bounderDwarf.scaling);
 		bounderDwarf.isVisible = false;
-
-		bounderDwarf.position.y = dwarf.position.y + 1.15 * bounderDwarf.scaling.y;
-
+	
+		bounderDwarf.position.y += (max._y - min._y) * dwarf.scaling.y/2;
+	
 		dwarf.bounder = bounderDwarf;
-
-		dwarf.showBoundingBox = true;
+	
+		dwarf.showBoundingBox = false;
 
 		let _dwarf = new Dwarf(dwarf, 0, 1, 10, scene,bounderDwarf);
 	}
 }
+	
+function calculateBoundingBoxParameters(mesh) {
+	// Compute BoundingBoxInfo for the Dude, for this we visit all children meshes
+	let childrenMeshes = getAllChildrenThatAreMeshes(mesh)
+	let bbInfo = totalBoundingInfo(childrenMeshes);
+	
+	return bbInfo;
+}
+	
+function getAllChildrenThatAreMeshes(mesh) {
+	let meshes = [];
+	var children = mesh.getChildren();
+
+	if ((children.length === 0) && (mesh instanceof BABYLON.Mesh)) {
+		meshes.push(mesh);
+	} else {
+		for (var i = 0 ; i < children.length ; i++) {
+			let child = children[i];
+			let childrenMeshes = getAllChildrenThatAreMeshes(child);
+			if(childrenMeshes.length !== 0) {
+				meshes = meshes.concat(childrenMeshes);
+			}
+		}
+	}
+	
+	return meshes;
+}
+	
+// Taken from BabylonJS Playground example : https://www.babylonjs-playground.com/#QVIDL9#1	
+function totalBoundingInfo(meshes) {	
+	var boundingInfo = meshes[0].getBoundingInfo();
+	var min = boundingInfo.minimum.add(meshes[0].position);
+	var max = boundingInfo.maximum.add(meshes[0].position);
+	for (var i = 1; i < meshes.length; i++) {
+		boundingInfo = meshes[i].getBoundingInfo();
+		min = BABYLON.Vector3.Minimize(min,boundingInfo.minimum.add(meshes[i].position));
+		max = BABYLON.Vector3.Maximize(max,boundingInfo.maximum.add(meshes[i].position));
+	}
+	
+	return new BABYLON.BoundingInfo(min, max);
+}
 
 function createPlayer(scene){
-	let playerTask = scene.assetsManager.addMeshTask("playertask","","assets/meshes/mob/Player/","player.babylon");
+	//Pour le joueur de nombreux problèmes sont survenue a cause du format du meshes, pour être plus spécifique, l'exportation du meshe de blender a 
+	//un fichier en .babylon a déformé l'ensemble des animations lié a celui-ci les rendant inutilisable. Tout le code lié au meshes issue du fichier .babylon
+	//sera laissé comme trace mais non focntionnel pour le fichier .glb ....
+	//Après des échec pour déplacer le joueur le fichier .babylon sera finalement choisi au dépend des animations
 
+	let playerTask = scene.assetsManager.addMeshTask("playertask","","assets/meshes/mob/Player/","player.babylon");
+	//let playerTask = scene.assetsManager.addMeshTask("playertask","","assets/meshes/mob/","Player.glb");
+	
 	playerTask.onSuccess = function (task) {
 		onPlayerImported(
 			task.loadedMeshes,
 			task.loadedParticleSystems,
-			task.loadSkeletons
+			task.loadedSkeletons
 		);
 	};
 
@@ -784,20 +832,53 @@ function createPlayer(scene){
 		//console.log(player);
 		
 		//pos
-		player.position = new BABYLON.Vector3(25, 65, -15);
-
+		player.position = new BABYLON.Vector3(-100, 0, -100);
+		//player.position = new BABYLON.Vector3(25, 80, -15);
 		//scaling
 		//console.log("initial player scaling ",player.scaling);
-		player.scaling = new BABYLON.Vector3(0.15,0.15,0.15);
-		player.frontVector = new BABYLON.Vector3(0, 0, 0); 
-		//console.log("update player scaling ",player.scaling);
+		player.scaling = new BABYLON.Vector3(0.15,0.15,0.15); //version pour le meshe en .babylon
+		//player.scaling = new BABYLON.Vector3(22,22,22); scaling .glb
+		
+		player.frontVector = new BABYLON.Vector3(0, 0, 0); //fie x = 1 pour permettre un déplacement du joueur vers l'avant quand on appuit sur z four le .glb
 
 		player.rotation.x = -Math.PI/2;
+		//player.rotation = new BABYLON.Vector3(0,0,0); pour les fichiers sous format glb il faut soit passer  par la rotation en Quaternion soit définir un vecteur de postion entier
+										 
 		player.name = "player";
 		player.speed = 1;
-
-
+		
+		/* .glb file 
 		// Create a box as BoundingBox of the player
+		let bounderPlayer = new BABYLON.Mesh.CreateBox("bounder" + player.name,1,scene);
+		let bounderMaterial = new BABYLON.StandardMaterial("bounderMaterial",scene);
+		bounderMaterial.alpha = 0.4;
+		bounderPlayer.material = bounderMaterial;
+		bounderPlayer.checkCollisions = true;
+	
+		bounderPlayer.position = player.position.clone();
+
+		let bbInfo = calculateBoundingBoxParameters(player)
+		console.log(bbInfo);
+	
+		let max = bbInfo.boundingBox.maximum;
+		let min = bbInfo.boundingBox.minimum;
+		console.log("infos ",min , max);
+		console.log("bbtaille init ",bounderPlayer);
+	
+		bounderPlayer.scaling.x = (max._x - min._x) * player.scaling.x;
+		bounderPlayer.scaling.y = (max._y - min._y) * player.scaling.y;		
+		bounderPlayer.scaling.z = (max._z - min._z) * player.scaling.z;
+		console.log("bbox taille ", bounderPlayer.scaling);
+		bounderPlayer.isVisible = true;
+	
+		bounderPlayer.frontVector = new BABYLON.Vector3(1, 0, 0);
+		bounderPlayer.position.y += (max._y - min._y) * player.scaling.y/2;
+	
+		player.bounder = bounderPlayer;*/
+
+		
+		//L'ensemble du code suivant focntion uniquement sur le fichier en .babylon encore une fois
+		//Create a box as BoundingBox of the player
 		let bounderPlayer = new BABYLON.Mesh.CreateBox("bounder" + player.name,1,scene);
 		let bounderMaterial = new BABYLON.StandardMaterial("bounderMaterial",scene);
 		bounderMaterial.alpha = 0.4;
@@ -819,14 +900,14 @@ function createPlayer(scene){
 		bounderPlayer.isVisible = false;
 
 		bounderPlayer.position.y = player.position.y + 1.15*bounderPlayer.scaling.y;
+		bounderPlayer.frontVector = new BABYLON.Vector3(0, 0, 0); 
 
 		player.bounder = bounderPlayer;
-		player.showBoundingBox = true;
+		player.showBoundingBox = false;
 
-		
-		console.log(skeletons); //Le skequelette est undefined alors qu'il apparaît dans l'inspecteur si on ouvre le meshe dans le 
-								//sandbox.... de ce fait l'ensemble des animations ne peuvent pas se lancer.
-		const idle = scene.beginWeightedAnimation(skeletons[0],630,1101,1,true,1);
+		//Gestion des animations pour le fichier en .babylon
+		//Suite a un problème dans le fihcier .babylon du mesh (ou du mesh en lui même) les animations étant bugé il est inutile d'utiliser les lignes suivantes
+		/*const idle = scene.beginWeightedAnimation(skeletons[0],630,1101,1,true,1);
 		const ending = scene.beginWeightedAnimation(skeletons[0],0,120,0,false,1);
 		const failed = scene.beginWeightedAnimation(skeletons[0],130,132,1.0,false,1);
 		const fireball = scene.beginWeightedAnimation(skeletons[0],140,343,0,false,1);
@@ -835,11 +916,10 @@ function createPlayer(scene){
 
 		idle.syncWith(null);
 		failed.syncWith(idle);
-
 		while(failed.weight >  0){
 			failed.weight -= 0.1;
 			idle.weight += 0.1;
-		}
+		}*/
 	}
 }
 
@@ -868,38 +948,31 @@ function movePlayer(scene){
 	let player = scene.getMeshByName("player");
 	
 	if (player){
-		//console.log(player.bounder);
-		//console.log(player.Player);
-		//if (!player.Player.bounder) return;
+		if (!player.bounder) return;
 	
-		//console.log("déplacement");
-		//console.log(player.playerMesh);
-		/*player.playerMesh.position.x = this.bounder.position.x;
-		this.playerMesh.position.z = this.bounder.position.z;
-		this.playerMesh.position.y = this.bounder.position.y;
-		
 		if (scene.inputStates.up) {
-			this.bounder.moveWithCollisions(
-			this.frontVector.multiplyByFloats(this.speed, this.speed, this.speed)
-			);
+			player.moveWithCollisions(player.frontVector.multiplyByFloats(player.speed, player.speed, player.speed));
+			player.bounder.moveWithCollisions(player.bounder.frontVector.multiplyByFloats(player.speed, player.speed, player.speed));
 		}
 	
 		if (scene.inputStates.down) {
-			this.bounder.moveWithCollisions(
-			this.frontVector.multiplyByFloats(-this.speed, -this.speed, -this.speed)
-			);
+			player.moveWithCollisions(player.frontVector.multiplyByFloats(-player.speed, -player.speed, -player.speed));
+			player.bounder.moveWithCollisions(player.bounder.frontVector.multiplyByFloats(-player.speed, -player.speed, -player.speed));
 		}
 	
+		//déplacement fonctionnel uniquement selon certain degré (certaines valeur de mesh.rotation.y)
 		if (scene.inputStates.left) {
-			var alpha = this.playerMesh.rotation.y;
-			alpha -= 0.02;
-			this.frontVector = new BABYLON.Vector3(-Math.sin(alpha), 0, -Math.cos(alpha));
+			player.rotation.y -= 0.02;
+			player.bounder.rotation.y -= 0.02;
+			player.frontVector = new BABYLON.Vector3(-Math.sin(player.rotation.y), 0, -Math.cos(player.rotation.y));
+			player.bounder.frontVector = new BABYLON.Vector3(-Math.sin(player.rotation.y), 0, -Math.cos(player.bounder.rotation.y));
 		}
 		if (scene.inputStates.right) {
-			var alpha = this.playerMesh.rotation.y;
-			alpha += 0.02;
-			this.frontVector = new BABYLON.Vector3(-Math.sin(alpha), 0,-Math.cos(alpha));
-		}*/
+			player.rotation.y += 0.02;
+			player.bounder.rotation.y += 0.02;
+			player.frontVector = new BABYLON.Vector3(-Math.sin(player.rotation.y), 0, -Math.cos(player.rotation.y));
+			player.bounder.frontVector = new BABYLON.Vector3(-Math.sin(player.rotation.y), 0,-Math.cos(player.bounder.rotation.y));
+		}
 	} 
 }
 
@@ -943,6 +1016,8 @@ function modifySettings() {
 		  event.key === "S"
 		) {
 		  scene.inputStates.down = true;
+		}else if (event.key === " "){
+			scene.inputStates.space = true;
 		}
 	  },
 	  false

@@ -21,12 +21,6 @@ export default class Shark {
             return;
         }
 
-        this.sharkMesh.position = new BABYLON.Vector3(
-            this.bounder.position.x,
-            this.bounder.position.y, 
-            this.bounder.position.z
-        );
-
         let target = new BABYLON.Vector3(0,0,0)
         let direction = target.subtract(this.sharkMesh.position);
         let distance = direction.length();
@@ -39,6 +33,7 @@ export default class Shark {
 
         if(distance<1000 && distance > 153) {
             this.bounder.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
+            this.sharkMesh.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
         }
     }
 }

@@ -20,12 +20,6 @@ export default class Dwarf {
       return;
     }
 
-    this.dwarfMesh.position = new BABYLON.Vector3(
-      this.bounder.position.x,
-      this.bounder.position.y, 
-      this.bounder.position.z
-    );
-
     let target = new BABYLON.Vector3(0,0,0)
     let direction = target.subtract(this.dwarfMesh.position);
     let distance = direction.length();
@@ -38,6 +32,7 @@ export default class Dwarf {
 
     if(distance<3000 && distance > 60) {
       this.bounder.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
+      this.dwarfMesh.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
     }
   }
 }
