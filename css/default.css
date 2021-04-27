@@ -11,20 +11,90 @@ html, body {
 }
 
 .MenuOnDisplay{
-    top: 100px;
-    right: 450px;
+    top: 50%; left: 50%; /* à 50%/50% du parent référent */
+    transform: translate(-50%, -50%);
     position: absolute;
     width : 500px;
     height: 500px;
     position : absolute;
-    color : whitesmoke;
+    color : rgb(255, 245, 49);
     border-color : transparent;
     border-radius : 2em;
     outline : none;
-    background-color : rgba(166, 204, 210,0.5);
-    text-align : center;
+    background-color : rgba(166, 204, 210,0.6);
+    padding: 3%;
+    text-align: justify;
+    text-shadow: 1px 1px 2px black;
 }
 
 .MenuNotDisplayed{
     display: none;
+}
+
+.crossOnDisplay{
+    z-index: 1;
+    font-size: 40px;
+    position: absolute;
+    top: 3%; right: 3%; /* à 50%/50% du parent référent */
+    transform: translate(-50%, -50%);
+    color: rgb(255, 128, 0);
+    background-color: rgba(11, 63, 56, 0.514);
+    border-radius: 3em;
+}
+
+.crossNotDisplayed{
+   display: none;
+}
+
+.barOnDisplay {
+    /* font-size: 10px */
+    z-index: 1;
+    width: 30em;
+    height: 1em;
+    border-radius: 0.5em;
+    top: 75%; left: 50%; /* à 50%/50% du parent référent */
+    transform: translate(-50%, -50%);
+    position: absolute;
+    background: #f2f2f2;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+}
+.barOnDisplay .percentage {
+    position: absolute;
+    font-size: 1em;
+    background: tomato;
+    height: 1em;
+    border-radius: 0.5em;
+}
+
+.barNotDisplayed{
+    display: none;
+}
+
+h2{
+    text-decoration: orange wavy underline;
+}
+
+#schema{
+    float: left;
+}
+
+#blabla{
+    font-size: 15px;
+    line-height: 1em;
+    margin-left:245px;
+}
+
+#blabla h3{
+    text-decoration: orange wavy underline;
+}
+
+table{
+    font-size: 20px;
+    color: rgb(255, 245, 49);
+}
+
+.fleche{
+    font-size: 30px;
+    font-weight: 500;
+    color: rgb(255, 136, 17);
 }

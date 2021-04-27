@@ -64,13 +64,12 @@ function createScene() {
 	createbridge(scene);
 	createDwarf(scene);
 	createDeapSea(scene);
-	//createSkybox(scene);
+	createSkybox(scene);
 	createSem(scene);
 	createHouse(scene);
 	loadSounds(scene);
 
 	createButtons();
-  
 	return scene;
 }
   
@@ -85,12 +84,7 @@ function configureAssetManager(scene) {
 	  totalCount,
 	  lastFinishedTask
 	) {
-	  engine.loadingUIText = "\n" +
-		"We are loading the scene. " +
-		remainingCount +
-		" out of " +
-		totalCount +
-		" items still need to be loaded.";
+	  document.querySelector("#loading").style.width = ((totalCount-remainingCount)/totalCount)*100 + "%"
 	  console.log(
 		"We are loading the scene. " +
 		  remainingCount +
@@ -101,9 +95,11 @@ function configureAssetManager(scene) {
 	};
   
 	assetsManager.onFinish = function (tasks) {
-	  engine.runRenderLoop(function () {
-		scene.toRender();
-	  });
+		document.querySelector("#croix").className = "crossOnDisplay";
+		document.querySelector("#bar").className = "barNotDisplayed";
+		engine.runRenderLoop(function () {
+			scene.toRender();
+		});
 	};
   
 	return assetsManager;
@@ -220,10 +216,13 @@ function createButtons(){
     button.style.top = "30px";
     button.style.right = "30px";
     button.textContent = "Pause Music";
-    button.style.width = "50px";
-    button.style.height = "50px";
+    button.style.width = "55px";
+    button.style.height = "55px";
     button.style.position = "absolute";
+	button.style.lineHeight = "1.5em";
 	button.style.color = "whitesmoke";
+	button.style.fontWeight = "300";
+	button.style.textShadow = "1px 1px 2px tomato";
 	button.style.borderColor = "transparent";
 	button.style.borderRadius = "2em";
 	button.style.outline = "none";
@@ -255,12 +254,15 @@ function createButtons(){
 	document.body.appendChild(scoreDisplay);
 
 	var control = document.createElement("control");
+	control.style.paddingTop = "0.5em";
+	control.style.lineHeight = "1.5em";
 	control.style.top = "110px";
     control.style.right = "30px";
-    control.textContent = "Hide Menu";
+    control.textContent = "Fermer Menu";
+	control.style.textShadow = "1px 1px 2px rgb(255, 245, 49);";
 	control.style.fontSize = "14px";
 	control.style.pading = "1em";
-    control.style.width = "50px";
+    control.style.width = "55px";
     control.style.height = "50px";
     control.style.position = "absolute";
 	control.style.color = "whitesmoke";
@@ -269,27 +271,42 @@ function createButtons(){
 	control.style.outline = "none";
 	control.style.backgroundColor = "rgba(166, 204, 210,0.5)";
 	control.style.textAlign = "center";
-	document.body.appendChild(control)
+	document.body.appendChild(control);
 
 	control.addEventListener("click", () => {
         menu()
-		if(control.innerHTML=="Hide Menu"){control.innerHTML="Show Menu"}
-		else if(control.innerHTML=="Show Menu"){control.innerHTML="Hide Menu"}
+		if(control.innerHTML=="Fermer Menu"){control.innerHTML="Ouvrir Menu"}
+		else if(control.innerHTML=="Ouvrir Menu"){control.innerHTML="Fermer Menu"}
     })
 
+	document.querySelector("#croix").addEventListener("click", () => {
+		console.log("click")
+		menu()
+		if(control.innerHTML=="Fermer Menu"){control.innerHTML="Ouvrir Menu"}
+		else if(control.innerHTML=="Ouvrir Menu"){control.innerHTML="Fermer Menu"}
+	})
 
+	
+	
 }
 
 function menu(){
 	clickMenu += 1;
-    if(clickMenu % 2 == 1){document.querySelector("#Menu").className = "MenuNotDisplayed";}
-	else{document.querySelector("#Menu").className = "MenuOnDisplay";}
+    if(clickMenu % 2 == 1){
+		document.querySelector("#Menu").className = "MenuNotDisplayed";
+		document.querySelector("#croix").className = "crossNotDisplayed";
+	}
+	else{
+		document.querySelector("#Menu").className = "MenuOnDisplay";
+		document.querySelector("#croix").className = "crossOnDisplay";
+	}
 }
 
 function loadScore(){
 	var scoretoDisplay = document.getElementsByTagName("score");
 	scoretoDisplay.textContent = "SCORE : "+score;
 }
+
 
 //==============================================================
 //						Meshes import

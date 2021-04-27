@@ -11,6 +11,73 @@
     </head>
     <body>
         <canvas id="myCanvas" width=1500 height=1100></canvas>
-        <p id="Menu" class="MenuOnDisplay">Blablabla</p>
+        
+        <div id="Menu" class="MenuOnDisplay">
+            <p class="crossNotDisplayed" id="croix" width ="70px" height="70px">&#10006;</p>
+            <h1 style="text-align: center; color: rgb(255, 128, 0); text-shadow: black 0.1em 0.1em 0.2em">MENU</h1></br>
+                <h2>Objectif :</h2>
+                    <p style="padding-left:5%">Votre île est attaquée par des intrus! Vous devez donc les attaquer avec votre pouvoir 
+                    afin de les éliminer et de protéger votre territoire. Plus vous en tuerez, plus votre score sera élevé.</p>
+                    <h4 style="padding-left:5%; color: rgb(255, 128, 0);">ATTENTION ! Tout ennemi peut en cacher un autre...</h3>
+                <h2>Commandes :</h2>
+                    <div id="schema">
+                        <table>
+                            <tr>
+                              <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                              <td></td>
+                              <td></td>
+                              <td class="fleche">&uarr;</td>
+                              <td></td>
+                              <td></td>
+                              <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td></td>
+                              <td></td>
+                              <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                              <td>Z</td>
+                              <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                              <td></td>
+                              <td></td>
+                            </tr>
+                            <tr>
+                              <td class="fleche">&larr;</td>
+                              <td></td>
+                              <td>Q</td>
+                              <td></td>
+                              <td>D</td>
+                              <td></td>
+                              <td class="fleche">&rarr;</td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>&nbsp;&nbsp;&nbsp;</td>
+                                <td></td>
+                                <td>S</td>
+                                <td></td>
+                                <td>&nbsp;&nbsp;</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td class="fleche">&darr;</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                          </table>
+                    </div>
+                    <div id="blabla">
+                        <h3>Déplacements : </h3>
+                        <p style="padding-left: 7%; padding-top: 0%;">Flèches directionnelles ou "ZQSD"</p>
+                        <h3>Utilisation des canons : </h3>
+                        <p style="padding-left: 7%; padding-top: 0%;">Clique droit sur le canon</p>
+                        <h3>Attaque : </h3>
+                        <p style="padding-left: 7%; padding-top: 0%;">Barre d'espace</p>
+                    </div>
+        </div>
+        <div class="barOnDisplay" id="bar"><div class="percentage" id="loading"  style="width: 0"></div>
     </body>
 </html>

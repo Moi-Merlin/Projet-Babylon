@@ -6,8 +6,8 @@ Ce repository contient notre projet, réalisé par MAIRE Cassandre et JACQUET Ga
 
 ## Jeu
 
-    Bienvenu sur l'île de Tortuga dans les Caraïbes. Ici réside ma vie et mon trésor et je ferais tout pour le préserver. Animaux ou humain, vivant ou mort, qui que vous soyez, jusqu'à ma dernière flamme vous serez mes ennemis.
-    > Nulle cause n'est perdue... s'il y a encore un pauvre fou prêt à se battre pour elle. *(Will Turner, Pirate des Caraïbe)* 
+Bienvenu sur l'île de Tortuga dans les Caraïbes. Ici réside ma vie et mon trésor et je ferais tout pour le préserver. Animaux ou humain, vivant ou mort, qui que vous soyez, jusqu'à ma dernière flamme vous serez mes ennemis.
+> Nulle cause n'est perdue... s'il y a encore un pauvre fou prêt à se battre pour elle. *(Will Turner, Pirate des Caraïbe)* 
 
 
 Le but du jeu sera donc de tuer le plus d'ennemis possible dans le temps imparti. 
@@ -28,10 +28,24 @@ Pour le lancement il suffira de selectionner le fichier index.html puis depuis u
 ## Contribution 
 
 Cassandre : 
+    - Implémentation du décors et de la scene par l'AssetsManager
+    - Intégration des canons dans le fort et de leur animations
+    - Implémentation de l'interface (chargement, boutons, musique, menu ...)
 
 
 Gaetan : 
+    - Intégration des personnages depuis Mixamo en passant par Blender pour les animations
+    - Tout ce qui à trait à ces derniers (BounderBoxes, déplacements, animation...), de même pour le requin
 
+Cassandre & Gaëtan :
+    - Etablissement du concept du jeu et des objectifs
+    - Recherche des assets à importer dans le projet
+    - Recherche de la musique de fond et du thème
+    - Recherche sur le forum et les video tutorielles de Babylon (Cassandre est même passée Padawan)
+
+Bien que des tâches spécifiques aient été attribuées pour l'avancée du projet, le travail à été réalisé en binôme par entraide voir même travail en simultanné.
+
+PS : Nous avons pensé à votre survie et avons donc ajouté un bouton afin de couper la bande son en arrière plan ;)
 - - - - - - - - - -
 
 ## Crédits
